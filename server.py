@@ -3,76 +3,41 @@ import pickle
 import warnings
 warnings.filterwarnings("ignore")
 
-# load the model
-# with open('../../models/cb.pkl', 'rb') as file:
-#with open('/home/user/Downloads/Precision_farming_final/Fertilizer.pkl', 'rb') as file:/
-# with open('/home/user/Documents/Project_PF/Fertilizer_UI/Fertilizer.pkl', 'rb') as file:
-#     model = pickle.load(file)
-
-with open("Fertilizer.pkl" , "rb") as file:
+with open('Our_Reccommendation.pkl', 'rb') as file:
     model = pickle.load(file)
 
-# create a flask application
 app = Flask(__name__)
 
 
-@app.route("/", methods=['GET'])
+@app.route("/", methods=["GET"])
 def root():
-    # read the file contents and send them to client
-    # return render_template('index.html')
-
     return render_template('index.html')
 
 
 @app.route("/classify", methods=["POST"])
 def classify():
-    # get the values entered by user66
+
     print(request.form)
-    Temperature = float(request.form.get("Temperature"))
-    Humidity = float(request.form.get("Humidity"))
-    Rainfall = float(request.form.get("Rainfall"))
-    pH = float(request.form.get("pH"))
-    N = float(request.form.get("N"))
-    P = float(request.form.get("P"))
-    K= float(request.form.get("K"))
-    Soil = str(request.form.get("Soil"))
-    Crop = str(request.form.get("Crop"))
+    N = int(request.form.get("N"))
+    P = int(request.form.get("P"))
+    K = int(request.form.get("K"))
+    temperature = float(request.form.get("temperature"))
+    humidity = float(request.form.get("humidity"))
+    ph = float(request.form.get("ph"))
+    rainfall = float(request.form.get("rainfall"))
 
-    print(Temperature)
+    output = model.predict([[N, P, K, temperature, humidity, ph, rainfall]])
 
-    Soil_dict = {'Clayey': 1, 'laterite': 2, 'silty clay': 3, 'sandy': 4, 'coastal': 5, 'clay loam': 6, 'alluvial': 7}
-
-    Crop_dict = {'rice': 1, 'Coconut': 2}
-
-    print(Soil_dict.get(Soil), Crop_dict.get(Crop))
-
-    output = model.predict([
-        [Temperature, Humidity, Rainfall, pH, N, P, K, Soil_dict.get(Soil), Crop_dict.get(Crop) ]
-                            ])
-
-    d = {'DAP and MOP': 1, 'Good NPK' : 2, 'MOP' : 3, 'Urea and DAP': 4, 'Urea and MOP': 5,'Urea': 6, 'DAP': 7}
-
-    ans = " "
+    d = {'rice': 1, 'maize': 2, 'chickpea': 3, 'kidneybeans': 4, 'pigeonpeas': 5,
+         'mothbeans': 6, 'mungbean': 7, 'blackgram': 8, 'lentil': 9, 'pomegranate': 10,
+         'banana': 11, 'mango': 12, 'grapes': 13, 'watermelon': 14, 'muskmelon': 15, 'apple': 16,
+         'orange': 17, 'papaya': 18, 'coconut': 19, 'cotton': 20, 'jute': 21, 'coffee': 22}
 
     for i in d.values():
         if output == i:
             keys = [k for k, i in d.items() if i == output]
-            ans += keys[0]
-    # return ("Recommended fertilizer : ", ans)
-    result = ans
-    print(result)
-    return render_template('index.html',result=result,
-                           Temperature=Temperature,
-                           Humidity = Humidity,
-                           Rainfall = Rainfall,
-                           pH=pH,
-                           N=N,
-                           P=P,
-                           K=K,
-                           Soil=Soil_dict.get(Soil),
-                           Crop=Crop_dict.get(Crop))
+    result = keys[0].upper()
+    return render_template('index.html', result=result,N=N, P=P, K=K, temperature=temperature, humidity=humidity, ph=ph,rainfall =rainfall)
 
 
-# start the application
-app.run(host="0.0.0.0", port=8002, debug=True)
-
+app.run(host="0.0.0.0", port=8001, debug=True)
